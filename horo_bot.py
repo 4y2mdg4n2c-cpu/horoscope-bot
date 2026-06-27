@@ -1,11 +1,12 @@
 import asyncio
 import os
-from horo import get_horoscope_data
+from keyboards.keyboards import get_keyboard
+from handlers.callback import router as callback_router
+from db import get_all_signs
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram import Router, types
+from aiogram import types, F
 from aiogram.filters import Command
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from dotenv import load_dotenv
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN')
@@ -13,30 +14,15 @@ if not TOKEN:
     raise ValueError('BOT_TOKEN не найден в .env')
 bot = Bot(token=TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
-def get_keyboard(data):
-    keyboard = [
-        [InlineKeyboardButton(text=sign.capitalize(), callback_data=sign)]
-        for sign in data.keys()
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+dp.include_router(callback_router)
 @dp.message(Command('start'))
 async def start(message: types.Message):
-    data = get_horoscope_data()
-    if not data:
-        await message.answer('Ошибка получения данных')
+    signs = get_all_signs
+    if not signs:
+        await message.answer('Нет данных в базе')
         return
-    keyboard = get_keyboard(data)
+    keyboard = get_keyboard(signs)
     await message.answer('Выберите знак зодиака:', reply_markup=keyboard)
-@dp.callback_query()
-async def get_sign(call: types.CallbackQuery):
-    sign = call.data
-    data = get_horoscope_data()
-    forecast = data.get(sign)
-    if forecast:
-        await call.message.answer(forecast)
-    else:
-        await call.message.answer("Не найден прогноз")
-    await call.answer()
 async def main():
     await dp.start_polling(bot)
 if __name__ == '__main__':

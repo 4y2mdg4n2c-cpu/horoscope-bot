@@ -48,19 +48,6 @@ def get_forecast(url):
     if not forecast:
         return None
     return forecast.text.strip()
-signs = get_signs()
-if signs:
-    for sign in signs:
-        full_url = urljoin(url_base, sign['ссылка'])
-        forecast = get_forecast(full_url)
-        sign['прогноз'] = forecast
-with open('signs.json', 'w', encoding='utf-8') as file:
-    json.dump(signs, file, ensure_ascii=False, indent=4)
-with open('signs.csv', 'w', newline='', encoding='utf-8') as file:
-    writer = csv.writer(file)
-    writer.writerow(['знак', 'дата', 'ссылка', 'прогноз'])
-    for item in signs:
-        writer.writerow([item['знак'], item['дата'], item['ссылка'], item['прогноз']])
 def get_horoscope_data():
     signs = get_signs()
     if not signs:
