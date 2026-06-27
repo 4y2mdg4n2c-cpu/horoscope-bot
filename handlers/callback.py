@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
-
+from services.horoscope import get_sign_forecast
 from db import get_forecast
 from update_db import update_db
 
@@ -21,7 +21,7 @@ async def update_handler(call: CallbackQuery):
 async def sign_handler(call: CallbackQuery):
     sign = call.data
 
-    forecast = get_forecast(sign)
+    forecast = get_sign_forecast(sign)
 
     if forecast:
         await call.message.answer(forecast)
